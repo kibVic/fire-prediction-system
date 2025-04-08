@@ -1,6 +1,4 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import joblib
 from sqlalchemy import create_engine
 from sklearn.model_selection import train_test_split
@@ -8,7 +6,6 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
 from imblearn.over_sampling import SMOTE
-
 
 # Function to load data from PostgreSQL
 def load_data_from_postgres(user, password, host, port, database, table_name):
@@ -45,6 +42,9 @@ def encode_categorical_features(df):
     label_encoder = LabelEncoder()
     df['confidence_encoded'] = label_encoder.fit_transform(df['confidence'])
     df['daynight_encoded'] = label_encoder.fit_transform(df['daynight'])
+    
+    # Save the label encoder after training
+    joblib.dump(label_encoder, 'label_encoder.pkl')
     return df
 
 # Function for scaling numerical features
@@ -116,27 +116,23 @@ def main():
     df = encode_categorical_features(df)
     df = scale_numerical_features(df)
 
-    #print sample df
-    print(df.head())
-
-    
-    
-    # # Step 3: Prepare the final DataFrame
+    # Step 3: Prepare the final DataFrame
     final_df = df.drop(columns=['sensor_timestamp', 'modis_timestamp', 'confidence', 'daynight'])
-
-    #print final df
-    print(final_df.head())
     
-    #columns
-    print(final_df.columns)
-    
- 
     # Step 4: Split the data into features (X) and target (y)
     X = final_df.drop(columns=['fire_detected'])
     y = final_df['fire_detected']
-    
+
+    print(X.columns)
+
     # Step 5: Split the data into training and testing sets (80% train, 20% test)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    #print x test
+    print(X_test)
+
+    #print y test
+    print(y_test)
     
     # Step 6: Apply SMOTE if applicable
     X_train_smote, y_train_smote = apply_smote(X_train, y_train)
