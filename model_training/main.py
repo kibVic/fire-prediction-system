@@ -38,8 +38,8 @@ def preprocess_data(df):
     df['daynight_encoded'] = daynight_encoder.fit_transform(df['daynight'])
 
     # Save the encoders for use in the prediction app
-    joblib.dump(confidence_encoder, 'confidence_encoder.pkl')
-    joblib.dump(daynight_encoder, 'daynight_encoder.pkl')
+    joblib.dump(confidence_encoder, 'encoders/confidence_encoder.pkl')
+    joblib.dump(daynight_encoder, 'encoders/daynight_encoder.pkl')
 
     # Return the preprocessed dataframe
     return df
@@ -118,13 +118,13 @@ def main():
     rf_classifier = train_random_forest(X_train_smote, y_train_smote)
 
     # Step 7: Save the model
-    save_model(rf_classifier, 'random_forest_model.pkl')
+    save_model(rf_classifier, 'models/random_forest_model.pkl')
 
     # Step 8: Evaluate the model
     evaluate_model_with_threshold(rf_classifier, X_test, y_test, threshold=0.1)
 
     # Step 9: Load and predict
-    loaded_model = load_model('random_forest_model.pkl')
+    loaded_model = load_model('models/random_forest_model.pkl')
     predictions = make_predictions(loaded_model, X_test)
     print(f"Predictions: {predictions}")
 
