@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Fire Detection Prediction{% endblock %}
+
+{% block content %}
+    <div class="center-form">
+        <h1>Fire Detection Prediction</h1>
+        <form id="predict-form">
+            <label for="json-input">Paste JSON data here:</label>
+            <textarea id="json-input" name="json-input" placeholder="Enter your JSON data..."></textarea>
+            <button type="button" onclick="predictFire()">Predict</button>
+        </form>
+        <div id="prediction-result"></div>
+    </div>
+
+    <script>
+        function predictFire() {
+            const jsonData = document.getElementById("json-input").value;
+
+            try {
+                const parsedData = JSON.parse(jsonData);
+
+                fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(parsedData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const result = data.prediction;
+                    const resultText = result === 1 ? "🔥 Fire Detected!" : "✅ No Fire Detected.";
+                    document.getElementById("prediction-result").innerText = resultText;
+                })
+                .catch(error => {
+                    alert("Error: " + error);
+                });
+            } catch (error) {
+                alert("Invalid JSON format. Please check the input.");
+            }
+        }
+    </script>
+{% endblock %}

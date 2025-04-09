@@ -1,0 +1,163 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f7f7;
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Header/Navbar Styling */
+header {
+    width: 100%;
+    background-color: #333;
+    padding: 15px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+header nav {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+header nav ul {
+    display: flex;
+    list-style-type: none;
+}
+
+header nav ul li {
+    margin-left: 20px;
+}
+
+header nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+header nav ul li a:hover {
+    background-color: #FF6347;  /* Tomato Orange */
+    color: white;
+}
+
+/* Centered Form Styling */
+.content-container {
+    width: 100%;
+    max-width: 600px; /* Reduced the max width */
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px; /* Reduced padding */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    margin-top: 80px; /* Avoid overlap with fixed navbar */
+}
+
+h1 {
+    text-align: center;
+    color: #FFA500;
+    font-size: 30px;  /* Reduced font size */
+    margin-bottom: 20px;
+}
+
+/* Input & Textarea */
+input[type="text"],
+input[type="password"],
+textarea {
+    width: 100%;
+    padding: 12px;  /* Reduced padding */
+    margin: 10px 0 20px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+    border-color: #FF6347;
+    outline: none;
+    box-shadow: 0 0 5px rgba(255, 99, 71, 0.5);
+}
+
+textarea {
+    height: 150px; /* Reduced textarea height */
+}
+
+/* Button Styling */
+button {
+    width: 100%;
+    padding: 12px;  /* Reduced padding */
+    background-color: #FFA500;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: #FF6347;  /* Tomato Orange */
+}
+
+/* Centered Content Class */
+.center-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+}
+
+/* Prediction Result Styling */
+#prediction-result {
+    font-size: 18px;
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+/* Form Input Labels */
+label {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+/* Scrollbars Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #FF6347;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #FF4500;
+}
