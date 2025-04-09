@@ -2,7 +2,7 @@ import pandas as pd
 import joblib
 from sqlalchemy import create_engine
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
 from imblearn.over_sampling import SMOTE
@@ -13,45 +13,35 @@ def load_data_from_postgres(user, password, host, port, database, table_name):
     df = pd.read_sql(f'SELECT * FROM {table_name}', engine)
     return df
 
-# Function to handle missing data
-def handle_missing_data(df):
+# Function to preprocess the DataFrame
+def preprocess_data(df):
+    # Step 1: Handle missing data
     df['fire_lat'].fillna(df['fire_lat'].median(), inplace=True)
     df['fire_long'].fillna(df['fire_long'].median(), inplace=True)
     df['bright_ti4'].fillna(df['bright_ti4'].median(), inplace=True)
     df['fire_radiative_power'].fillna(df['fire_radiative_power'].median(), inplace=True)
-    
     df['confidence'].fillna(df['confidence'].mode()[0], inplace=True)
     df['daynight'].fillna(df['daynight'].mode()[0], inplace=True)
-    return df
 
-# Function for feature engineering
-def feature_engineering(df):
-    # Extract time features from sensor_timestamp
+    # Step 2: Feature Engineering
     df['sensor_hour'] = df['sensor_timestamp'].dt.hour
     df['sensor_dayofweek'] = df['sensor_timestamp'].dt.dayofweek
     df['sensor_day'] = df['sensor_timestamp'].dt.day
-    
-    # Calculate the time difference between sensor_timestamp and modis_timestamp
     df['timestamp_diff'] = (df['sensor_timestamp'] - df['modis_timestamp']).dt.total_seconds() / 60
     df['timestamp_diff'].fillna(0, inplace=True)
-    
-    return df
 
-# Function to encode categorical features
-def encode_categorical_features(df):
-    label_encoder = LabelEncoder()
-    df['confidence_encoded'] = label_encoder.fit_transform(df['confidence'])
-    df['daynight_encoded'] = label_encoder.fit_transform(df['daynight'])
-    
-    # Save the label encoder after training
-    joblib.dump(label_encoder, 'label_encoder.pkl')
-    return df
+    # Step 3: Encode categorical features using separate encoders
+    confidence_encoder = LabelEncoder()
+    df['confidence_encoded'] = confidence_encoder.fit_transform(df['confidence'])
 
-# Function for scaling numerical features
-def scale_numerical_features(df):
-    scaler = StandardScaler()
-    df[['sensor_value', 'fire_lat', 'fire_long', 'fire_radiative_power']] = scaler.fit_transform(
-        df[['sensor_value', 'fire_lat', 'fire_long', 'fire_radiative_power']])
+    daynight_encoder = LabelEncoder()
+    df['daynight_encoded'] = daynight_encoder.fit_transform(df['daynight'])
+
+    # Save the encoders for use in the prediction app
+    joblib.dump(confidence_encoder, 'confidence_encoder.pkl')
+    joblib.dump(daynight_encoder, 'daynight_encoder.pkl')
+
+    # Return the preprocessed dataframe
     return df
 
 # Function to apply SMOTE to the training data
@@ -63,9 +53,9 @@ def apply_smote(X_train, y_train):
         return X_train_smote, y_train_smote
     else:
         print("SMOTE cannot be applied. Insufficient samples in the minority class.")
-        return X_train, y_train  # Use the original data if SMOTE can't be applied
+        return X_train, y_train
 
-# Function to train a Random Forest classifier with class weights
+# Function to train a Random Forest classifier
 def train_random_forest(X_train, y_train):
     rf_classifier_weighted = RandomForestClassifier(random_state=42, class_weight='balanced')
     rf_classifier_weighted.fit(X_train, y_train)
@@ -97,56 +87,43 @@ def make_predictions(model, X_test):
     predictions = model.predict(X_test)
     return predictions
 
-
-# Main function to load, preprocess, train, evaluate, and save the model
+# Main function
 def main():
     # Step 1: Load the data
     user = 'root'
     password = 'root'
-    host = '172.20.0.2'
+    host = '172.20.0.3'
     port = '5432'
     database = 'magic_db'
     table_name = 'prediction_data'
     
     df = load_data_from_postgres(user, password, host, port, database, table_name)
     
-    # Step 2: Data Preprocessing
-    df = handle_missing_data(df)
-    df = feature_engineering(df)
-    df = encode_categorical_features(df)
-    df = scale_numerical_features(df)
+    print(df.columns)
+    # Step 2: Preprocess the data
+    df = preprocess_data(df)
 
     # Step 3: Prepare the final DataFrame
     final_df = df.drop(columns=['sensor_timestamp', 'modis_timestamp', 'confidence', 'daynight'])
-    
-    # Step 4: Split the data into features (X) and target (y)
+
+    # Step 4: Split the data
     X = final_df.drop(columns=['fire_detected'])
     y = final_df['fire_detected']
-
-    print(X.columns)
-
-    # Step 5: Split the data into training and testing sets (80% train, 20% test)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    #print x test
-    print(X_test)
 
-    #print y test
-    print(y_test)
-    
-    # Step 6: Apply SMOTE if applicable
+    # Step 5: Apply SMOTE
     X_train_smote, y_train_smote = apply_smote(X_train, y_train)
-    
-    # Step 7: Train the Random Forest classifier
+
+    # Step 6: Train the model
     rf_classifier = train_random_forest(X_train_smote, y_train_smote)
-    
-    # Step 8: Save the trained model
+
+    # Step 7: Save the model
     save_model(rf_classifier, 'random_forest_model.pkl')
-    
-    # Step 9: Evaluate the model with adjusted threshold
+
+    # Step 8: Evaluate the model
     evaluate_model_with_threshold(rf_classifier, X_test, y_test, threshold=0.1)
 
-    # Step 10: Load the saved model and make predictions
+    # Step 9: Load and predict
     loaded_model = load_model('random_forest_model.pkl')
     predictions = make_predictions(loaded_model, X_test)
     print(f"Predictions: {predictions}")
