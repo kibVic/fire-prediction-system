@@ -1,0 +1,11 @@
+Flask==2.0.1
+Werkzeug==2.0.1
+pandas
+scikit-learn
+joblib
+psycopg2-binary
+sqlalchemy==1.4.36
+Flask-SQLAlchemy==2.5.1
+python-dotenv
+bcrypt
+imblearn

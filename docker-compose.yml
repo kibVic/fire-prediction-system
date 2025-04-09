@@ -1,0 +1,30 @@
+services:
+  # Service for model training
+  trainer:
+    build: .
+    container_name: model_trainer
+    command: python model_training/main.py
+    networks:
+      - fire-network
+    volumes:
+      - .:/app
+    env_file:
+      - .env  
+
+  # Service for the Flask app (fire prediction system)
+  app:
+    build: .
+    container_name: fire_app
+    command: python app/app.py
+    ports:
+      - "5000:5000"
+    networks:
+      - fire-network
+    volumes:
+      - .:/app
+    env_file:
+      - .env  
+
+networks:
+  fire-network:
+    external: true
